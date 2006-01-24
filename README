@@ -1,0 +1,21 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=1450
+
+This VHDL indent file will help indent a VHDL file in Vim with the operator '='.
+To indent the whole file, do 'gg=G'. See ":help ="
+
+Previous good work has been done by N. J. Heo & Janez Strangelj (see vimscript#766). However, Heo & Strangelj's script was lacking in terms of alignment for assignment statements that continued on for more than one line, among other things.
+
+This script covers a broad set of VHDL keywords, and performs proper alignment on port/generic mappings & on the RHS of assignment operators.
+
+To disable alignment of generic/port mappings:
+  :let g:vhdl_indent_genportmap = 0
+
+To disable alignment of right-hand side assignment "<=" statements:
+  :let g:vhdl_indent_rhsassign = 0
+
+The two options above are enabled by default. To change them, place either of the above in ".vimrc".
+
+In later versions of Vim 7.1 and above, access help documentation with:
+  :help ft-vhdl-indent
+
+Please send feedback and bug reports via e-mail. Much appreciated :)
