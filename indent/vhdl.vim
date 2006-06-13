@@ -1,8 +1,8 @@
 " VHDL indent ('93 syntax)
 " Language:    VHDL
 " Maintainer:  Gerald Lai <laigera+vim?gmail.com>
-" Version:     1.36
-" Last Change: 2006 Apr 12
+" Version:     1.40
+" Last Change: 2006 Jun 13
 " URL:         http://www.vim.org/scripts/script.php?script_id=1450
 
 " only load this indent file when no other was loaded
@@ -15,7 +15,7 @@ let b:did_indent = 1
 setlocal indentexpr=GetVHDLindent()
 setlocal indentkeys=!^F,o,O,e,0(,0)
 setlocal indentkeys+==~if,=~then,=~elsif,=~else
-setlocal indentkeys+==~begin,=~is,=~select
+setlocal indentkeys+==~begin,=~end,=~is,=~select
 
 " count repeat
 "function! <SID>CountWrapper(cmd)
@@ -292,50 +292,55 @@ function GetVHDLindent()
   " where:    start of current line
   " find previous opening statement of
   " keywords: "for", "if"
-  if curs =~? '^\s*\<generate\>' && prevs =~? s:NC.s:NE.'\%(\%(\<wait\s\+\)\@<!\<for\>\|\<if\>\)'
+  if curs =~? '^\s*\<generate\>' && prevs =~? s:NC.s:NE.'\%(\%(\<wait\s\+\)\@<!\<for\|\<if\)\>'
     return ind2
   endif
 
   " indent:   +sw
-  " keywords: "begin", "block", "loop", "process", "record", "units"
-  " removed:  "case", "elsif", "if", "while"
+  " keywords: "block", "process"
+  " removed:  "begin", "case", "elsif", "if", "loop", "record", "units", "while"
   " where:    anywhere in previous line
-  if prevs =~? s:NC.'\%(\<begin\>\|'.s:NE.'\<\%(block\|loop\|process\|record\|units\)\>\)'
+  if prevs =~? s:NC.s:NE.'\<\%(block\|process\)\>'
     return ind + &sw
   endif
 
   " indent:   +sw
-  " keywords: "architecture", "component", "configuration", "entity", "for", "package"
-  " removed:  "when", "with"
+  " keywords: "architecture", "configuration", "entity", "package"
+  " removed:  "component", "for", "when", "with"
   " where:    start of previous line
-  if prevs =~? '^\s*\%(architecture\|component\|configuration\|entity\|for\|package\)\>'
+  if prevs =~? '^\s*\%(architecture\|configuration\|entity\|package\)\>'
     return ind + &sw
   endif
 
   " indent:   +sw
-  " keyword:  "generate", "is", "select", "=>"
+  " keyword:  "select"
+  " removed:  "generate", "is", "=>"
   " where:    end of previous line
-  if prevs =~? s:NC.'\%(\%('.s:NE.'\<generate\|\<is\|\<select\)\|=>\)'.s:ES
+  if prevs =~? s:NC.'\<select'.s:ES
     return ind + &sw
   endif
 
   " indent:   +sw
-  " keyword:  "else"
+  " keyword:  "begin", "loop", "record", "units"
+  " where:    anywhere in previous line
+  " keyword:  "component", "else", "for"
   " where:    start of previous line
-  " keyword:  "then"
+  " keyword:  "generate", "is", "then", "=>"
   " where:    end of previous line
   " _note_:   indent allowed to leave this filter
-  if prevs =~? '^\s*else\>' || prevs =~? s:NC.'\<then'.s:ES
+  if prevs =~? s:NC.'\%(\<begin\>\|'.s:NE.'\<\%(loop\|record\|units\)\>\)' || prevs =~? '^\s*\%(component\|else\|for\)\>' || prevs =~? s:NC.'\%('.s:NE.'\<generate\|\<\%(is\|then\)\|=>\)'.s:ES
     let ind = ind + &sw
   endif
 
   " ****************************************************************************************
   " indent:   -sw
-  " keywords: "when", provided previous line does not begin with "when"
+  " keywords: "when", provided previous line does not begin with "when", does not end with "is"
   " where:    start of current line
   let s4 = '^\s*when\>'
   if curs =~? s4
-    if prevs !~? s4
+    if prevs =~? s:NC.'\<is'.s:ES
+      return ind
+    elseif prevs !~? s4
       return ind - &sw
     else
       return ind2
@@ -343,42 +348,9 @@ function GetVHDLindent()
   endif
 
   " indent:   -sw
-  " keywords: "else", "elsif", provided previous line does not contain "then"
+  " keywords: "else", "elsif", "end" + "block", "for", "function", "generate", "if", "loop", "procedure", "process", "record", "units"
   " where:    start of current line
-  if curs =~? '^\s*\%(else\|elsif\)\>'
-    if prevs !~? s:NC.'\<then\>'
-      return ind - &sw
-    else
-      return ind2
-    endif
-  endif
-
-  " indent:   -sw
-  " keywords: "end" + "if", provided previous line does not begin with "else", not contain "then"
-  " where:    start of current line
-  if curs =~? '^\s*end\s\+if\>'
-    if prevs !~? '^\s*else\>' && prevs !~? s:NC.'\<then\>'
-      return ind - &sw
-    else
-      return ind2
-    endif
-  endif
-
-  " indent:   -sw
-  " keywords: "end" + "function", "procedure", provided previous line does not contain "begin"
-  " where:    start of current line
-  if curs =~? '^\s*end\s\+\%(function\|procedure\)\>'
-    if prevs !~? s:NC.'\<begin\>'
-      return ind - &sw
-    else
-      return ind2
-    endif
-  endif
-
-  " indent:   -sw
-  " keywords: "end" + "block", "for", "generate", "loop", "process", "record", "units"
-  " where:    start of current line
-  if curs =~? '^\s*end\s\+\%(block\|for\|generate\|loop\|process\|record\|units\)\>'
+  if curs =~? '^\s*\%(else\|elsif\|end\s\+\%(block\|for\|function\|generate\|if\|loop\|procedure\|process\|record\|units\)\)\>'
     return ind - &sw
   endif
 
