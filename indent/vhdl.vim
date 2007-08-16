@@ -1,8 +1,8 @@
 " VHDL indent ('93 syntax)
 " Language:    VHDL
 " Maintainer:  Gerald Lai <laigera+vim?gmail.com>
-" Version:     1.52
-" Last Change: 2007 Aug 06
+" Version:     1.53
+" Last Change: 2007 Aug 16
 " URL:         http://www.vim.org/scripts/script.php?script_id=1450
 
 " only load this indent file when no other was loaded
@@ -78,7 +78,7 @@ function GetVHDLindent()
   if curs =~ '^\s*--'
     let pn = curn - 1
     let ps = getline(pn)
-    if ps =~ '--'
+    if curs =~ '--\s' && ps =~ '--'
       return indent(pn) + stridx(substitute(ps, '^\s*', '', ''), '--')
     else
       " find nextnonblank line that is not a comment
